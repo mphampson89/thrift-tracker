@@ -1,0 +1,9 @@
+{
+  "name": "Thrifted",
+  "short_name": "Thrifted",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fdf5f4",
+  "theme_color": "#fdf5f4",
+  "description": "A boutique log of every find, every flip, every dollar made"
+}
