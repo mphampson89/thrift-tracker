@@ -25,7 +25,7 @@ export default function AIPanel({ result, onAccept, accepted, thumb }) {
             flexShrink: 0,
             borderRadius: 13,
             overflow: 'hidden',
-            background: 'linear-gradient(135deg, #fbe4e8 0%, #f0aab8 100%)',
+            background: `linear-gradient(135deg, ${PALETTE.blush50} 0%, ${PALETTE.blush100} 100%)`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -46,7 +46,7 @@ export default function AIPanel({ result, onAccept, accepted, thumb }) {
               <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
                 <path d="M6 1L7.2 4.8L11 6L7.2 7.2L6 11L4.8 7.2L1 6L4.8 4.8Z" fill={PALETTE.blush700}/>
               </svg>
-              <Label color={PALETTE.blush700} size={9.5}>AI identified</Label>
+              <Label color={PALETTE.blush700} size={10.5}>AI identified</Label>
             </div>
 
             <div style={{

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import {
@@ -32,6 +32,7 @@ export default function AddItem() {
   const [platform, setPlatform] = useState('')
   const [notes, setNotes] = useState('')
   const [status, setStatus] = useState('unsold')
+  const savingRef = useRef(false)
 
   function handlePhotoChange(e) {
     const file = e.target.files[0]
@@ -68,6 +69,8 @@ export default function AddItem() {
 
   async function handleSave() {
     if (!name || !cost) return alert('Please add a name and what you paid.')
+    if (savingRef.current) return
+    savingRef.current = true
     setSaving(true)
     try {
       let photoUrl = null
@@ -96,6 +99,7 @@ export default function AddItem() {
     } catch (err) {
       console.error(err)
       alert('Error saving item.')
+      savingRef.current = false
       setSaving(false)
     }
   }
