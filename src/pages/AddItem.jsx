@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import {
@@ -32,6 +32,7 @@ export default function AddItem() {
   const [platform, setPlatform] = useState('')
   const [notes, setNotes] = useState('')
   const [status, setStatus] = useState('unsold')
+  const savingRef = useRef(false)
 
   function handlePhotoChange(e) {
     const file = e.target.files[0]
@@ -68,6 +69,8 @@ export default function AddItem() {
 
   async function handleSave() {
     if (!name || !cost) return alert('Please add a name and what you paid.')
+    if (savingRef.current) return
+    savingRef.current = true
     setSaving(true)
     try {
       let photoUrl = null
@@ -96,6 +99,7 @@ export default function AddItem() {
     } catch (err) {
       console.error(err)
       alert('Error saving item.')
+      savingRef.current = false
       setSaving(false)
     }
   }
@@ -223,6 +227,7 @@ export default function AddItem() {
       {(step === STEPS.RESULT || step === STEPS.FORM) && aiResult && (
         <AIPanel
           result={aiResult}
+          thumb={photo}
           onAccept={() => setStep(STEPS.FORM)}
           accepted={step === STEPS.FORM}
         />
@@ -245,7 +250,11 @@ export default function AddItem() {
             <SelectRow
               value={status}
               onChange={setStatus}
-              options={['unsold', 'listed', 'sold']}
+              options={[
+                { value: 'unsold', label: 'In stock' },
+                { value: 'listed', label: 'Listed' },
+                { value: 'sold', label: 'Sold' },
+              ]}
             />
           </Field>
           {(status === 'listed' || status === 'sold') && (
@@ -256,6 +265,27 @@ export default function AddItem() {
           <Field label="Notes">
             <TextArea value={notes} onChange={setNotes} placeholder="Condition, provenance, buyer notes…"/>
           </Field>
+
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={!canSave || saving}
+            style={{
+              all: 'unset',
+              cursor: canSave && !saving ? 'pointer' : 'default',
+              marginTop: 16,
+              padding: '15px 18px',
+              width: '100%',
+              boxSizing: 'border-box',
+              background: canSave && !saving ? PALETTE.ink : PALETTE.warmStone,
+              color: canSave && !saving ? PALETTE.blush50 : PALETTE.ink3,
+              borderRadius: 14,
+              fontWeight: 700,
+              fontSize: 15,
+              textAlign: 'center',
+              letterSpacing: -0.1,
+            }}
+          >{saving ? 'Saving…' : 'Save find'}</button>
         </div>
       )}
     </div>

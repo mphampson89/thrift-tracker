@@ -147,6 +147,7 @@ export function CountUp({ value, size = 40, color = PALETTE.blush50, prefix = '$
 export const PLATFORMS = ['eBay', 'Poshmark', 'Facebook Marketplace', 'Mercari', 'Depop', 'Other']
 
 export function SelectRow({ value, onChange, options = PLATFORMS }) {
+  const opts = options.map(o => (typeof o === 'string' ? { value: o, label: o } : o))
   return (
     <div className="no-scrollbar" style={{
       display: 'flex',
@@ -154,11 +155,11 @@ export function SelectRow({ value, onChange, options = PLATFORMS }) {
       overflowX: 'auto',
       WebkitOverflowScrolling: 'touch',
     }}>
-      {options.map(o => (
+      {opts.map(o => (
         <button
-          key={o}
+          key={o.value}
           type="button"
-          onClick={() => onChange(o)}
+          onClick={() => onChange(o.value)}
           style={{
             all: 'unset',
             cursor: 'pointer',
@@ -167,11 +168,11 @@ export function SelectRow({ value, onChange, options = PLATFORMS }) {
             fontSize: 12.5,
             fontWeight: 600,
             whiteSpace: 'nowrap',
-            background: value === o ? PALETTE.blush700 : PALETTE.card,
-            color: value === o ? PALETTE.blush50 : PALETTE.ink2,
-            border: `1px solid ${value === o ? 'transparent' : PALETTE.hairline}`,
+            background: value === o.value ? PALETTE.blush700 : PALETTE.card,
+            color: value === o.value ? PALETTE.blush50 : PALETTE.ink2,
+            border: `1px solid ${value === o.value ? 'transparent' : PALETTE.hairline}`,
           }}
-        >{o}</button>
+        >{o.label}</button>
       ))}
     </div>
   )
