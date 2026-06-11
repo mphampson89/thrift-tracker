@@ -261,6 +261,27 @@ export default function AddItem() {
           <Field label="Notes">
             <TextArea value={notes} onChange={setNotes} placeholder="Condition, provenance, buyer notes…"/>
           </Field>
+
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={!canSave || saving}
+            style={{
+              all: 'unset',
+              cursor: canSave && !saving ? 'pointer' : 'default',
+              marginTop: 16,
+              padding: '15px 18px',
+              width: '100%',
+              boxSizing: 'border-box',
+              background: canSave && !saving ? PALETTE.ink : PALETTE.warmStone,
+              color: canSave && !saving ? PALETTE.blush50 : PALETTE.ink3,
+              borderRadius: 14,
+              fontWeight: 700,
+              fontSize: 15,
+              textAlign: 'center',
+              letterSpacing: -0.1,
+            }}
+          >{saving ? 'Saving…' : 'Save find'}</button>
         </div>
       )}
     </div>
