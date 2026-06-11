@@ -223,6 +223,7 @@ export default function AddItem() {
       {(step === STEPS.RESULT || step === STEPS.FORM) && aiResult && (
         <AIPanel
           result={aiResult}
+          thumb={photo}
           onAccept={() => setStep(STEPS.FORM)}
           accepted={step === STEPS.FORM}
         />
