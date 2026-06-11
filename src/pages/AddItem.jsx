@@ -245,7 +245,11 @@ export default function AddItem() {
             <SelectRow
               value={status}
               onChange={setStatus}
-              options={['unsold', 'listed', 'sold']}
+              options={[
+                { value: 'unsold', label: 'In stock' },
+                { value: 'listed', label: 'Listed' },
+                { value: 'sold', label: 'Sold' },
+              ]}
             />
           </Field>
           {(status === 'listed' || status === 'sold') && (
