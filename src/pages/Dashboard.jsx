@@ -4,9 +4,9 @@ import { supabase } from '../lib/supabase'
 import { Label, CountUp, Sparkline, PALETTE } from '../lib/ui'
 import { computeStats, bestFind, profitSparkline } from '../lib/stats'
 
-function MiniStat({ label, value, fg, suffix }) {
+function MiniStat({ label, value, fg, suffix, last }) {
   return (
-    <div style={{ textAlign: 'center', borderRight: '1px solid rgba(244,168,180,0.14)' }}>
+    <div style={{ textAlign: 'center', borderRight: last ? 'none' : '1px solid rgba(244,168,180,0.14)' }}>
       <div style={{
         fontSize: 9,
         fontWeight: 700,
@@ -125,7 +125,7 @@ export default function Dashboard() {
           }}>
             <MiniStat label="Invested" value={stats.invested} fg={PALETTE.blush50}/>
             <MiniStat label="Earned" value={stats.earned} fg={PALETTE.blush50}/>
-            <MiniStat label="Margin" value={stats.margin} suffix="%" fg={PALETTE.blush300}/>
+            <MiniStat label="Margin" value={stats.margin} suffix="%" fg={PALETTE.blush300} last />
           </div>
         </div>
       </div>
