@@ -1,4 +1,4 @@
-import { PALETTE } from '../lib/ui'
+import { PALETTE } from '../lib/theme'
 
 export default function IdentifyingOverlay() {
   return (

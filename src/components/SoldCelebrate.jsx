@@ -1,4 +1,5 @@
-import { CountUp, PALETTE } from '../lib/ui'
+import { CountUp } from '../lib/ui'
+import { PALETTE } from '../lib/theme'
 
 export default function SoldCelebrate({ profit }) {
   return (

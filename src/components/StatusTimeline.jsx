@@ -1,4 +1,6 @@
-import { Label, PALETTE, formatShortDate } from '../lib/ui'
+import { Label } from '../lib/ui'
+import { PALETTE } from '../lib/theme'
+import { formatShortDate } from '../lib/format'
 
 export default function StatusTimeline({ status, dateAdded, soldDate }) {
   const steps = [

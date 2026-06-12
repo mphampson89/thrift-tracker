@@ -2,8 +2,9 @@ import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import {
-  Label, Field, DollarInput, TextInput, TextArea, SelectRow, PALETTE, PLATFORMS,
+  Label, Field, DollarInput, TextInput, TextArea, SelectRow,
 } from '../lib/ui'
+import { PALETTE, PLATFORMS } from '../lib/theme'
 import AIPanel from '../components/AIPanel'
 import IdentifyingOverlay from '../components/IdentifyingOverlay'
 

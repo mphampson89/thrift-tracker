@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { Label, CountUp, Sparkline, PALETTE } from '../lib/ui'
+import { Label, CountUp, Sparkline } from '../lib/ui'
+import { PALETTE } from '../lib/theme'
 import { computeStats, bestFind, profitSparkline } from '../lib/stats'
 
 function MiniStat({ label, value, fg, suffix, last }) {

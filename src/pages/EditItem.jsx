@@ -3,8 +3,9 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import {
   Label, Money, StatusPill, CircleBtn, Field, DollarInput, TextInput, TextArea, SelectRow,
-  PALETTE, PLATFORMS, formatShortDate,
 } from '../lib/ui'
+import { PALETTE, PLATFORMS } from '../lib/theme'
+import { formatShortDate } from '../lib/format'
 import StatusTimeline from '../components/StatusTimeline'
 import SoldCelebrate from '../components/SoldCelebrate'
 import CompsPanel from '../components/CompsPanel'

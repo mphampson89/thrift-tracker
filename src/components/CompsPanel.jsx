@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Label, PALETTE } from '../lib/ui'
+import { Label } from '../lib/ui'
+import { PALETTE } from '../lib/theme'
 
 const COMP_PLATFORMS = [
   { key: 'ebay-active', label: 'eBay Active',    url: q => `https://www.ebay.com/sch/i.html?_nkw=${q}` },
