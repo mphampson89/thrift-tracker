@@ -6,7 +6,8 @@ import AddItem from './pages/AddItem'
 import Inventory from './pages/Inventory'
 import Dashboard from './pages/Dashboard'
 import EditItem from './pages/EditItem'
-import { PALETTE, formatShortDate } from './lib/ui'
+import { PALETTE } from './lib/theme'
+import { formatShortDate } from './lib/format'
 
 function BrandStrip() {
   return (

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { Label, Money, Sparkline, PALETTE } from '../lib/ui'
+import { Label, Money, Sparkline } from '../lib/ui'
+import { PALETTE } from '../lib/theme'
 import { computeStats, profitSparkline } from '../lib/stats'
 
 function ItemCard({ item }) {

@@ -1,22 +1,5 @@
-import { useEffect, useState } from 'react'
-
-export const PALETTE = {
-  bg: '#fdf5f4',
-  card: '#ffffff',
-  ink: '#3a1d29',
-  ink2: '#6b3a4a',
-  ink3: '#a8848e',
-  hairline: '#f1dfe1',
-  hairline2: '#f7eaec',
-  blush50: '#fdeef0',
-  blush100: '#fad6db',
-  blush300: '#f4a8b4',
-  blush500: '#e07d92',
-  blush700: '#c25a78',
-  blush900: '#7a2c45',
-  warmStone: '#efece4',
-  gold: '#c89a6a',
-}
+import { useEffect, useId, useState } from 'react'
+import { PALETTE, PLATFORMS } from './theme'
 
 export function Money({ value, size = 17, weight = 600, color = PALETTE.ink, prefix = '$' }) {
   if (value == null || value === '') {
@@ -87,6 +70,7 @@ export function StatusPill({ status, size = 'sm' }) {
 }
 
 export function Sparkline({ data, width = 80, height = 30, color = PALETTE.blush700 }) {
+  const rawId = useId()
   if (!data || data.length === 0) return null
   const max = Math.max(...data, 1)
   const min = Math.min(...data, 0)
@@ -96,7 +80,7 @@ export function Sparkline({ data, width = 80, height = 30, color = PALETTE.blush
   }))
   const d = norm.map((p, i) => (i === 0 ? `M${p.x} ${p.y}` : `L${p.x} ${p.y}`)).join(' ')
   const area = `${d} L${width} ${height} L0 ${height} Z`
-  const id = `sg-${Math.random().toString(36).slice(2, 8)}`
+  const id = `sg-${rawId.replace(/:/g, '')}`
   return (
     <svg width={width} height={height} style={{ display: 'block' }}>
       <defs>
@@ -143,8 +127,6 @@ export function CountUp({ value, size = 40, color = PALETTE.blush50, prefix = '$
     </span>
   )
 }
-
-export const PLATFORMS = ['eBay', 'Poshmark', 'Facebook Marketplace', 'Mercari', 'Depop', 'Other']
 
 export function SelectRow({ value, onChange, options = PLATFORMS }) {
   const opts = options.map(o => (typeof o === 'string' ? { value: o, label: o } : o))
@@ -271,11 +253,4 @@ export function CircleBtn({ children, onClick, ariaLabel }) {
       }}
     >{children}</button>
   )
-}
-
-export function formatShortDate(d) {
-  if (!d) return ''
-  const date = typeof d === 'string' ? new Date(d) : d
-  if (isNaN(date)) return ''
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }

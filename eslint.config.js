@@ -17,5 +17,14 @@ export default defineConfig([
       globals: globals.browser,
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
+    rules: {
+      'react-refresh/only-export-components': ['error', { allowConstantExport: true }],
+    },
+  },
+  {
+    files: ['netlify/functions/**/*.js'],
+    languageOptions: {
+      globals: globals.node,
+    },
   },
 ])

@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { PALETTE } from '../lib/ui'
+import { PALETTE } from '../lib/theme'
 
 const Icons = {
   inventory: (active) => (

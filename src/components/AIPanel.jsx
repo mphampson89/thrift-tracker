@@ -1,4 +1,5 @@
-import { Label, PALETTE } from '../lib/ui'
+import { Label } from '../lib/ui'
+import { PALETTE } from '../lib/theme'
 import CompsPanel from './CompsPanel'
 
 export default function AIPanel({ result, onAccept, accepted, thumb }) {
