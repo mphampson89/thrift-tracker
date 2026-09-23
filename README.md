@@ -1,3 +1,5 @@
+Big Mood Vintage review work is on this branch. Start at [the current handoff](prototypes/big-mood/HANDOFF.md). The prototype is separate from the original application described below.
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
