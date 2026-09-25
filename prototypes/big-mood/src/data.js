@@ -4,6 +4,7 @@ export const themes = {
   club: { name: 'Clubhouse', note: 'A little more Big Mood.', description: 'A blue canvas, softer shapes and a more expressive brand presence.' },
 }
 export const seed = {
+ platforms: [{id:'instagram',name:'Instagram'},{id:'website',name:'Website'},{id:'poshmark',name:'Poshmark'}],
  sources: [{id:'shop-a',name:'Neighbourhood thrift (sample)'},{id:'shop-b',name:'Community resale (sample)'}],
  items: [
   {id:'BM-001',sourcedFrom:'shop-a',name:'Burgundy scallop cardigan',photo:0,cost:12,price:48,status:'Ready to list',size:'M',condition:'Very good',flaws:'Light pilling at cuffs, shown in photos.',location:'Rack 1',source:'Thrift purchase',date:'2026-09-21',notes:'Soft knit. Cream buttons. Brand unconfirmed.',measurements:'Chest 48 cm flat; length 55 cm',target:20,prep:2,listed:'',caption:''},
@@ -18,8 +19,8 @@ export const seed = {
   {id:'c2',name:'Jess M.',handle:'@jess_demo',email:'',phone:'',address:'',flags:['Missed pickup','Review before accepting another order'],notes:[{date:'2026-09-10',text:'Missed the agreed pickup without a message. Rebooked and collected the next day.',order:'BM-097'}]},
  ],
  orders: [
-  {id:'BM-101',items:['BM-003'],customer:'c1',total:58,fee:0,actualShipping:0,discount:0,status:'Awaiting payment',method:'Local pickup',date:'2026-09-21',deadline:'2026-09-22T18:00',appointment:'2026-09-23T18:00',instructions:'Confirm pickup details in Instagram.',reference:'',refund:0},
-  {id:'BM-100',items:['BM-006'],customer:'c1',total:54,fee:0,actualShipping:0,discount:0,status:'Completed',method:'Local pickup',date:'2026-09-19',deadline:'',appointment:'',instructions:'Collected.',reference:'DEMO-019',refund:0},
+  {id:'BM-101',items:['BM-003'],customer:'c1',platform:'instagram',total:58,fee:0,actualShipping:0,discount:0,status:'Awaiting payment',method:'Local pickup',date:'2026-09-21',deadline:'2026-09-22T18:00',appointment:'2026-09-23T18:00',instructions:'Confirm pickup details in Instagram.',reference:'',refund:0},
+  {id:'BM-100',items:['BM-006'],customer:'c1',platform:'poshmark',total:54,fee:0,actualShipping:0,discount:0,status:'Completed',method:'Local pickup',date:'2026-09-19',deadline:'',appointment:'',instructions:'Collected.',reference:'DEMO-019',refund:0},
  ],
  expenses:[{id:'e1',vendor:'Packaging supplies',amount:8.5,category:'Packaging',date:'2026-09-19',receipt:true},{id:'e2',vendor:'Laundry supplies',amount:4.5,category:'Cleaning',date:'2026-09-20',receipt:true}],
  researchSpent:0,
