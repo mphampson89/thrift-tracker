@@ -1,11 +1,11 @@
 # Big Mood Vintage — working app specification
 
-**Status:** DRAFT for external audit, 2026-09-24. Not approved for build.
+**Status:** DRAFT for external audit, 2026-09-24. Scope assumptions confirmed by Patrick 2026-09-24 (section 13). Not approved for build.
 **Branch:** `codex/big-mood-review-handoff` in `mphampson89/thrift-tracker`.
 
 ## Plain-English summary
 
-This describes the real app that replaces the clickable preview: Jenn's record of her resale business, from finding a piece to getting paid for it and seeing what made money. It keeps everything the preview demonstrated, but with real saved data, a login, and Patrick limited to viewing. It does not post to Instagram, talk to the bank, or take payments; she still does those by hand. Section 13 lists the choices this spec assumes that Patrick has not yet confirmed.
+This describes the real app that replaces the clickable preview: Jenn's record of her resale business, from finding a piece to getting paid for it and seeing what made money. It keeps everything the preview demonstrated, but with real saved data and a login for each of them; Patrick and Jenn have the same full access. It does not post to Instagram, talk to the bank, or take payments; she still does those by hand. Section 13 records the scope choices Patrick confirmed on 2026-09-24.
 
 ## 1. Sources of truth
 
@@ -15,12 +15,9 @@ This describes the real app that replaces the clickable preview: Jenn's record o
 
 ## 2. Users and roles
 
-| Role | Who | Can |
-|---|---|---|
-| Owner | Jenn | Everything in this spec. |
-| Viewer | Patrick | Read every screen and report, and export CSVs. Cannot create, edit, delete, confirm payments, or trigger paid AI. |
+Two accounts, **both owners with identical full access**: Jenn and Patrick. (Decided 2026-09-24; this supersedes PRODUCT.md's earlier "Patrick is a read-only viewer".) There is no viewer role.
 
-- Roles are enforced **on the server** for every write and every paid call. Hiding buttons is only a courtesy.
+- Every write and every paid AI call records which account made it (audit log, section 7).
 - Customer contact details and private flags are personal information: every read requires a signed-in session. No public endpoint returns business data.
 
 ## 3. Decisions already made (do not reopen)
@@ -70,7 +67,7 @@ Each feature lists what must be true when done. "Prototype screen" names where t
 ### 5.4 Customers (prototype: Customers)
 - Name, Instagram handle, optional email, phone, delivery address.
 - Dated, factual private notes and flags (preset list from prototype `flags`, plus positive flags). A warning shows when reserving for a flagged customer; the owner decides whether to proceed.
-- Order history per customer. Only the owner can see or edit notes; the viewer sees customer names and order history but **not** contact details or private notes. *(Assumption — see 13.)*
+- Order history per customer. Both accounts see and edit everything.
 
 ### 5.5 Orders (prototype: Orders, order detail, Reserve dialog)
 - Reserve one or more items for a customer: platform, fulfilment method (Local pickup / Local delivery / Shipping), agreed discount, delivery or shipping fee charged, payment deadline (default 24 h, adjustable).
@@ -91,7 +88,7 @@ Each feature lists what must be true when done. "Prototype screen" names where t
 - Owner funding (money she puts in) is recorded separately and is never revenue.
 
 ### 5.8 Sources and platforms
-- As built in the prototype (`src/Sources.jsx`, `src/Platforms.jsx`): add, rename (propagates via stable IDs), and for platforms remove with a warning naming how many orders become Not recorded. Sources cannot be removed while items reference them *(assumption — see 13)*.
+- As built in the prototype (`src/Sources.jsx`, `src/Platforms.jsx`): add, rename (propagates via stable IDs), and for platforms remove with a warning naming how many orders become Not recorded. A source can be deleted only when no items or purchases reference it; otherwise rename only.
 - Name rules: trimmed, collapsed spaces, case-insensitive unique including fixed options; 70 chars (source) / 40 chars (platform).
 
 ### 5.9 Money and reports (prototype: Money)
@@ -101,14 +98,16 @@ Each feature lists what must be true when done. "Prototype screen" names where t
 
 ### 5.10 AI assistance (optional, capped)
 - **Photo draft:** from a photo, suggest name, brand, era, description and a CAD price range with confidence. Clearly labelled as an AI estimate. Reuses `analyze-photo.js`, corrected to CAD and a current model.
-- **Sold-price research** and **receipt reading**: *deferred* unless Patrick confirms (see 13).
-- Every paid call: owner only, shows its cost before running, counts toward a monthly cap (default C$5) stored in settings; at the cap the button is disabled with an explanation. Insufficient evidence is shown as insufficient, never as a price.
+- **Receipt reading:** from a receipt photo, suggest vendor, date, total and category for an expense or purchase. Suggestions are pre-filled for review; nothing is confirmed without the user checking it.
+- **Sold-price research:** for an item, find recent *sold* (not asking) prices for comparable pieces using Claude with the web search tool. Each result must cite its source page, sale price, currency and date; the item shows a price range only when there are at least 3 cited comparables, otherwise "Not enough evidence". Asking prices and uncited figures are never used. Displayed cost per run is an estimate recorded after the call from actual usage.
+- All three use the Anthropic API with the existing `CLAUDE_API_KEY`; model choice per feature is a plan decision (cheapest model that passes a fixed test set).
+- Every paid call: either account, shows its estimated cost before running, counts toward a monthly cap (default C$5) stored in settings; at the cap the button is disabled with an explanation. Insufficient evidence is shown as insufficient, never as a price.
 
 ### 5.11 Offline capture
-- If the phone has no signal in a store, quick capture (photos + cost + source + note) is saved on the device and uploaded when back online, with a visible "waiting to upload" count. Only new captures queue; editing existing records requires a connection. *(Assumption — see 13.)*
+- If the phone has no signal in a store, quick capture (photos + cost + source + note) is saved on the device and uploaded when back online, with a visible "waiting to upload" count. Only new captures queue; editing existing records requires a connection.
 
 ### 5.12 Public page
-- bigmoodvintage.com shows the brand page from the prototype (logo, tagline, "message us on Instagram", pickup/delivery/shipping summary). Static, no business data. *(Scope assumption — see 13.)*
+- bigmoodvintage.com shows the brand page from the prototype (logo, tagline, "message us on Instagram", pickup/delivery/shipping summary). Static, no business data. Included in this build.
 
 ## 6. Money rules (these replace the prototype's shortcuts)
 
@@ -133,7 +132,7 @@ Platform removal sets `orders.platform_id` to NULL (displayed Not recorded). Sou
 
 - Same stack as Thrifted: React + Vite front end, Netlify Functions API, Neon Postgres, Netlify Blobs for photos and receipts. No new paid services.
 - **New Netlify site** for Big Mood Vintage (proposed `app.bigmoodvintage.com`); Thrifted keeps running untouched until cut-over (section 11).
-- Auth: two accounts (owner, viewer), password login, HttpOnly Secure SameSite=Strict session cookie, sessions stored server-side, login rate-limited. Every function checks the session and role first.
+- Auth: two accounts (Jenn, Patrick), email + password (hashed with a slow password hash), HttpOnly Secure SameSite=Strict session cookie lasting 30 days, sessions stored server-side and revocable, login rate-limited, a manual password reset path documented (no email service required). Every function checks the session first.
 - Photos served only through an authenticated function (not public Blob URLs), resized on upload to a max edge of 2048 px; HEIC converted to JPEG on the phone before upload.
 - Offline queue: IndexedDB on the device, uploads with an idempotency key so a retry never creates a duplicate item.
 - Server writes that span tables (payment confirmation, refunds, purchases) run in a single transaction.
@@ -146,7 +145,7 @@ Clubhouse direction from the prototype (tokens in `prototypes/big-mood/src/style
 ## 10. Testing and acceptance
 
 - Unit tests for every rule in section 6, including the prototype's `verify-sources.mjs` cases, item-level restock, cost snapshot immutability, and unknown-cost propagation.
-- Server tests proving the viewer role is refused on every write endpoint and every paid AI endpoint, and that unauthenticated requests get no data.
+- Server tests proving unauthenticated requests get no data and cannot write or trigger paid AI on any endpoint, and that the AI cap is enforced on the server.
 - Browser checks of every flow in section 5 on a phone-width and a laptop-width viewport.
 - **Acceptance by Jenn on her own iPhone**: capture in a store (including offline), post prep, a reservation through payment and pickup, a refund with restock, an expense, and the Money page.
 
@@ -157,18 +156,18 @@ Clubhouse direction from the prototype (tokens in `prototypes/big-mood/src/style
 
 ## 12. Cost
 
-Target C$25/month total. Expected: Netlify free tier, Neon free tier, Blobs within free allowance, AI capped at C$5 by default. Domain already owned. To be validated during build.
+Target C$25/month total. Expected: Netlify free tier, Neon free tier, Blobs within free allowance, AI capped at C$5 by default (three AI features share one cap). Domain already owned. To be validated during build.
 
-## 13. Assumptions awaiting Patrick's confirmation
+## 13. Scope choices confirmed by Patrick, 2026-09-24
 
-1. **Separate new site and database**, Thrifted left running until cut-over (vs rebuilding Thrifted in place).
-2. **Thrifted test inventory is not migrated.**
-3. **Patrick as viewer cannot see customer contact details or private notes.**
-4. **AI scope for first release:** photo draft only; sold-price research and receipt reading deferred.
-5. **Offline capture included** in the first release (new captures only).
-6. **Public brand page included** in this build (vs later).
-7. **Sources cannot be deleted while in use** (rename only).
-8. **Login by password** for both accounts (vs email magic link).
+1. New separate Netlify site and database; Thrifted left running until Jenn accepts the new app.
+2. Thrifted's test inventory is **not** migrated.
+3. Patrick has the **same full access** as Jenn (no read-only role).
+4. First release AI: photo draft, receipt reading **and** sold-price research, under one monthly cap.
+5. Offline capture of new finds is included.
+6. The public brand page at bigmoodvintage.com is included.
+7. Sources: delete only when unused; rename otherwise.
+8. Sign-in: email + password per person, 30-day session.
 
 ## 14. Before build
 
