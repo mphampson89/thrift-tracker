@@ -76,7 +76,7 @@ Automatic Instagram posting or DMs; bank connection; taking card payments; autom
 | Sold | Ready to list | S | return with Restock (5.6); next "Mark listed" starts a new cycle |
 | Sold | Archived | S | return with Write-off (5.6) |
 | Preparing / Ready to list / Listed | Archived | U | reason required |
-| Archived | Preparing | U | only if never sold, or archived by write-off |
+| Archived | Preparing | U | always (user-archived items were in stock; write-offs may be repaired) |
 
   Reserved and Sold items cannot be archived, deleted, or have price/cost edited except through the flows below.
 - **30-day review:** Today lists items whose `listed_at` is 30+ days ago. Nothing reprices automatically.
@@ -205,7 +205,7 @@ bigmoodvintage.com: logo, tagline, "Message us on Instagram" link, pickup/delive
 3. **At payment**, per line: `allocated_discount` = allocation of the order discount by agreed-price weights; `net_sale` = agreed − allocated_discount. Fee charged is **not** allocated to lines. For platform orders, `allocated_platform_fee` = allocation of the platform fee by `net_sale` weights. Identity (tested): Σ net_sale + fee charged = amount due.
 4. **Snapshots at payment** on each line: cost basis (5.1 rules; may be NULL), prep cost, source ID. Never updated afterwards.
 5. **Postage** (actual, and return postage) is allocated to lines by `net_sale` weight only where a per-line view needs it; comparisons exclude it (5.9).
-6. **Cost adjustments.** Entering or changing cost or prep on an item with a sold, un-returned line prompts "Apply to the sale on <date>?"; yes writes a `cost_adjustments` row (line, old effective cost, new, reason, who). Effective cost = snapshot + Σ adjustments. An unknown snapshot becomes known through an adjustment. No adjustment ⇒ the past sale is unchanged.
+6. **Cost adjustments.** Entering or changing cost or prep on an item with a sold, un-returned line prompts "Apply to the sale on <date>?"; yes writes a `cost_adjustments` row (line, old effective cost, new, reason, who). Adjustments store absolute old and new values; effective cost = the latest adjustment's new value, else the snapshot (equivalent to snapshot + Σ changes, and it also works when the snapshot was unknown). An unknown snapshot becomes known through an adjustment. No adjustment ⇒ the past sale is unchanged.
 7. **Cost of goods sold** for a period = Σ effective cost of lines paid in the period − Σ restock reversals dated in the period. Prep is reported separately.
 8. **Dates** (Edmonton): merchandise sales, fees charged, platform fees, cost of goods sold, prep, actual postage and cost adjustments are dated to the order's **payment date** (a late postage entry or cost adjustment restates that period). Refunds, return postage and restock reversals are dated to the **refund date**. Expenses: receipt date. Owner funding: date received.
 9. **Unpaid reservations** never count as revenue.
@@ -245,7 +245,7 @@ Append-only (the app's database role has INSERT but not UPDATE/DELETE on it). Ea
 - **Photos and receipts:** served only by an authenticated function that looks the file up by database record ID (never an arbitrary key), with `Cache-Control: private, max-age=31536000, immutable`. Lists use thumbnails. Receipt images follow the same rules.
 - **Sign-out:** clears the session, sends `Clear-Site-Data: "cache"`, clears in-memory data; the offline capture queue is kept.
 - **CSP:** as strict as the prototype, `connect-src 'self'`.
-- **Backups:** a nightly scheduled job writes an encrypted full export (all tables + new/changed photos and receipts) to a Cloudflare R2 bucket on Patrick's account, using a credential that can write but not delete. Retention: daily for 30 days, monthly for 7 years. Targets: lose at most 24 h; restore within a day. A written restore procedure is tested once into a fresh Neon project before acceptance. Neon's own history is a first line, not the backup.
+- **Backups:** a nightly scheduled job writes an encrypted full export (all tables + new/changed photos and receipts) to a Cloudflare R2 bucket on Patrick's account, with R2 bucket-lock rules so objects cannot be deleted or overwritten early (R2 tokens cannot be write-only). Retention: daily for 30 days, monthly for 7 years. Targets: lose at most 24 h; restore within a day. A written restore procedure is tested once into a fresh Neon project before acceptance. Neon's own history is a first line, not the backup.
 - **Privacy:** data is stored with Neon, Netlify, Cloudflare (backups) and processed by Anthropic (photos and receipts for AI suggestions); the public-page notice says so. Breach procedure (README): revoke all sessions, rotate secrets, assess whether there is a real risk of significant harm, and if so notify the Alberta Privacy Commissioner and affected people as Alberta PIPA requires.
 
 ## 9. Design
