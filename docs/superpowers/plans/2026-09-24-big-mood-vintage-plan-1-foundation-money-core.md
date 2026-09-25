@@ -26,6 +26,9 @@
 - Production secrets exist only in Netlify's production context. Tests never touch Neon.
 - `git push` to `main` of the new repo deploys the new site only after Task 19 connects it; before then nothing deploys.
 - Plain JavaScript ESM, no TypeScript, no ORM. 2-space indent, no semicolons (match Thrifted's style).
+- Inside `db.tx(async q => …)` use only `q`, never `ctx.db` (PGlite would wait forever; Neon would run the query outside the transaction).
+- Cast every aggregate in SQL: `COALESCE(sum(x), 0)::int`, `count(*)::int`. Return `date` columns as `YYYY-MM-DD` strings (`col::text`) and timestamps as ISO strings in every response. PGlite (tests) and Neon (production) parse raw types differently; casting makes them identical.
+- Work happens on branch `plan-1` of the new repo; `main` only receives it in Task 19 with Patrick's go-ahead.
 
 ## Agent assignment (cost/quality routing)
 
@@ -85,7 +88,7 @@ Dispatch each subagent with: the task text verbatim, the spec path, and Global C
 - [ ] **Step 2: Ask Patrick** to confirm creating GitHub repo `mphampson89/big-mood-vintage` (private). On yes: `gh repo create mphampson89/big-mood-vintage --private`, then `git clone` into `C:\dev\big-mood-vintage`.
 - [ ] **Step 3: Neon.** List regions (`mcp__neon__list_regions`); prefer a Canadian region if listed, else `aws-us-east-2`. Create project `big-mood-vintage` in org `org-holy-star-58875250` (Launch plan). Create branch `dev` for development and previews. Record project ID, both connection strings (pooled) — do not print them into chat or commit them.
 - [ ] **Step 4: Cloudflare R2** (Patrick does this; use the BLOCKED template): create bucket `big-mood-vintage-backups`; add bucket lock rules: prefix `daily/` retain 30 days, prefix `monthly/` retain 7 years; add lifecycle rule deleting `daily/` objects after 31 days; create an R2 API token with Object Read & Write on this bucket only. Patrick sends back: account ID and confirmation the token exists (he pastes the key ID/secret straight into Netlify in Task 19, not into chat).
-- [ ] **Step 5: Generate the backup encryption key** locally: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`. Tell Patrick to store it in his password manager as "Big Mood Vintage backup key"; it goes into Netlify in Task 19. Without it backups cannot be restored.
+- [ ] **Step 5: Backup encryption key** — generated in Task 19 Step 2, when it is first needed: 32 random bytes, base64. Patrick stores it in his password manager as "Big Mood Vintage backup key"; without it backups cannot be restored.
 
 ### Task 1: Scaffold
 
@@ -508,7 +511,10 @@ Note for the executor: the spec says "effective cost = snapshot + Σ adjustments
 - [ ] **Step 2: Create `server/db.js`**
 
 ```js
-import { Pool } from '@neondatabase/serverless'
+import { Pool, types } from '@neondatabase/serverless'
+
+// 20 = int8. Return bigint results (counts, sums, bigserial ids) as numbers, as PGlite does in tests.
+types.setTypeParser(20, v => Number(v))
 
 // One pool per request; call end() when the request finishes.
 export function neonDb(url = process.env.DATABASE_URL) {
@@ -541,8 +547,9 @@ export function neonDb(url = process.env.DATABASE_URL) {
 ```js
 import { readdir, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-export async function applyMigrations(db, dir = new URL('../db/migrations/', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')) {
+export async function applyMigrations(db, dir = fileURLToPath(new URL('../db/migrations/', import.meta.url))) {
   const files = (await readdir(dir)).filter(f => f.endsWith('.sql')).sort()
   let applied = new Set()
   try {
@@ -2565,7 +2572,7 @@ Review the whole branch against the spec sections 5.1–5.9, 6, 7 and 8 and this
 - [ ] **Step 2: Create the Netlify site** `big-mood-vintage` linked to `mphampson89/big-mood-vintage`, branch `main`, in account `mphampson` (confirm with Patrick first; this creates a live site). Set environment variables in the **production** context only: `DATABASE_URL` (production), `BACKUP_KEY`, `R2_ACCOUNT_ID`, `R2_BUCKET`; Patrick pastes `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY` himself (BLOCKED template). Deploy-preview and branch contexts get the `dev` branch `DATABASE_URL` and no R2 or backup variables. Custom domain `app.bigmoodvintage.com` is deferred to Plan 2 (no UI yet).
 - [ ] **Step 3: Deploy** by pushing `main` (Patrick's explicit "go" first). Verify: `GET /api/health` → 200; `GET /api/items` without a cookie → 401; a `POST` with a foreign `Origin` → 403; response headers include the CSP and `noindex`.
 - [ ] **Step 4: Seed accounts** — `DATABASE_URL=<production> node scripts/seed-users.mjs "Jenn" <her email> "Patrick" <his email>` (ask Patrick for both emails). Give Patrick the two temporary passwords privately in the terminal output only. Sign in once with each via `curl` against production and change the password (or leave `must_change_password` for Plan 2's screens — Patrick decides).
-- [ ] **Step 5: Concurrency probe against real Neon** (dev branch, local `node` script, not committed): create one listed item and fire two reservation requests in parallel with different users; exactly one succeeds and the other gets `item_unavailable`. Repeat with two parallel payment confirmations using the same idempotency key → one payment row.
+- [ ] **Step 5: Concurrency probe against real Neon** (dev branch, local `node` script, not committed): create one listed item and fire two reservation requests in parallel with different users; exactly one succeeds and the other gets `item_unavailable`. Repeat with two parallel payment confirmations using the same idempotency key → one payment row. Also confirm on Neon that `SELECT count(*) FROM items` returns a JavaScript number and `SELECT paid_on::text` a `YYYY-MM-DD` string through `neonDb()`.
 - [ ] **Step 6: Run the backup once** from the Netlify UI ("Run now" on the scheduled function) and confirm the object appears in R2 and an `audit_log` `backup success` row exists.
 - [ ] **Step 7: Restore drill** — create an empty Neon branch, run `scripts/restore.mjs r2:daily/<today>.bmv` against it, compare the printed counts with production, then delete the drill branch (with Patrick's OK).
 - [ ] **Step 8: Set a Netlify credit alert** (account currently has none) at 80% — Patrick's call on the threshold; it is an account setting.
