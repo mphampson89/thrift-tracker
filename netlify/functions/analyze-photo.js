@@ -13,8 +13,9 @@ export const handler = async (event) => {
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 900,
+      model: 'claude-sonnet-5-5',
+      max_tokens: 1024, // thinking counts toward max_tokens on 5.x models
+      output_config: { effort: 'low' },
       messages: [
         {
           role: 'user',
@@ -46,7 +47,8 @@ Prices are realistic USD resale values, no dollar signs, integers only. Lower th
   })
 
   const data = await response.json()
-  const text = data.content[0].text
+  if (data.stop_reason === 'refusal') throw new Error('Model declined to identify this photo')
+  const text = data.content.find((b) => b.type === 'text').text
   const json = JSON.parse(text.match(/\{[\s\S]*\}/)[0])
 
   return {
